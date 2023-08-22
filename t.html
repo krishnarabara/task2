@@ -1,0 +1,141 @@
+html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Form</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        input[type=text] {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <h2>Employee Form</h2>
+    <form id="employeeForm">
+        <label for="name">Employee Name:</label>
+        <input type="text" id="name" required>
+        <label for="salary">Salary Code:</label>
+        <input type="text" id="salary" required>
+        <button type="submit">Add Employee</button>
+    </form>
+
+    <hr>
+
+    <h2>Employee List</h2>
+    <label for="search">Search:</label>
+    <input type="text" id="search" onkeyup="searchEmployees()" placeholder="Search by name or salary code">
+
+    <table id="employeeTable">
+        <tr>
+            <th>Employee Name</th>
+            <th>Salary Code</th>
+            <th>Actions</th>
+        </tr>
+    </table>
+
+    <script>
+        // Function to add employee to local storage
+        function addEmployee(event) {
+            event.preventDefault();
+
+            var name = document.getElementById("name").value;
+            var salary = document.getElementById("salary").value;
+
+            var employees = JSON.parse(localStorage.getItem("employees")) || [];
+            employees.push({ name: name, salary: salary });
+            localStorage.setItem("employees", JSON.stringify(employees));
+
+            document.getElementById("employeeForm").reset();
+            displayEmployees();
+        }
+
+        // Function to display employees from local storage
+        function displayEmployees() {
+            var employees = JSON.parse(localStorage.getItem("employees")) || [];
+            var table = document.getElementById("employeeTable");
+
+            // Clear existing table rows
+            while (table.rows.length > 1) {
+                table.deleteRow(1);
+            }
+
+            // Add employees to table
+            for (var i = 0; i < employees.length; i++) {
+                var employee = employees[i];
+                var row = table.insertRow(-1);
+                row.insertCell(0).innerHTML = employee.name;
+                row.insertCell(1).innerHTML = employee.salary;
+                var actionsCell = row.insertCell(2);
+                actionsCell.innerHTML = '<button onclick="editEmployee(' + i + ')">Edit</button> <button onclick="deleteEmployee(' + i + ')">Delete</button>';
+            }
+        }
+
+        // Function to edit employee
+        function editEmployee(index) {
+            var employees = JSON.parse(localStorage.getItem("employees")) || [];
+            var employee = employees[index];
+            var name = prompt("Enter new name", employee.name);
+            var salary = prompt("Enter new salary code", employee.salary);
+
+            if (name && salary) {
+                employee.name = name;
+                employee.salary = salary;
+                localStorage.setItem("employees", JSON.stringify(employees));
+                displayEmployees();
+            }
+        }
+
+        // Function to delete employee
+        function deleteEmployee(index) {
+            var employees = JSON.parse(localStorage.getItem("employees")) || [];
+            employees.splice(index, 1);
+            localStorage.setItem("employees", JSON.stringify(employees));
+            displayEmployees();
+        }
+
+        // Function to search employees
+        function searchEmployees() {
+            var searchValue = document.getElementById("search").value.toLowerCase();
+            var employees = JSON.parse(localStorage.getItem("employees")) || [];
+            var filteredEmployees = employees.filter(function (employee) {
+                return employee.name.toLowerCase().includes(searchValue) || employee.salary.toLowerCase().includes(searchValue);
+            });
+
+            var table = document.getElementById("employeeTable");
+
+            // Clear existing table rows
+            while (table.rows.length > 1) {
+                table.deleteRow(1);
+            }
+
+            // Add filtered employees to table
+            for (var i = 0; i < filteredEmployees.length; i++) {
+                var employee = filteredEmployees[i];
+                var row = table.insertRow(-1);
+                row.insertCell(0).innerHTML = employee.name;
+                row.insertCell(1).innerHTML = employee.salary;
+                var actionsCell = row.insertCell(2);
+                actionsCell.innerHTML = '<button onclick="editEmployee(' + employees.indexOf(employee) + ')">Edit</button> <button onclick="deleteEmployee(' + employees.indexOf(employee) + ')">Delete</button>';
+            }
+        }
+
+        // Display employees on page load
+        displayEmployees();
+
+        // Add event listener to form submit
+        document.getElementById("employeeForm").addEventListener("submit", addEmployee);
+    </script>
+</body>
+</html>
